@@ -36,7 +36,7 @@ function doPost(e) {
     ]);
     
     // === ENVIAR NOTIFICAÇÃO POR E-MAIL ===
-    const emailNotificacao = "EMAIL_DA_PESSOA_AQUI@gmail.com";
+    const emailNotificacao = "gabes.kerkhoff@gmail.com";
     const assunto = "Nova Inscrição - Cuidando do Templo: " + data.nome;
     const corpoEmail = "Olá!\n\n" +
                        "Acabou de receber uma nova inscrição no grupo Cuidando do Templo.\n\n" +
@@ -45,19 +45,27 @@ function doPost(e) {
                        "- WhatsApp: " + data.whatsapp + "\n" +
                        "- E-mail: " + data.email + "\n" +
                        "- Objetivo: " + data.objetivo + "\n\n" +
-                       "Ver comprovativo de pagamento: " + fileUrl + "\n\n" +
+                       "Ver comprovante de pagamento: " + fileUrl + "\n\n" +
                        "Todos os outros detalhes já estão na Folha de Cálculo.";
                        
-    MailApp.sendEmail(emailNotificacao, assunto, corpoEmail);
+    GmailApp.sendEmail(emailNotificacao, assunto, corpoEmail);
     // =====================================
     
     return ContentService.createTextOutput(JSON.stringify({ "status": "success", "fileUrl": fileUrl }))
                          .setMimeType(ContentService.MimeType.JSON);
                          
   } catch(error) {
+    // SE ALGO FALHAR (ex: erro ao enviar e-mail), ESCREVE NA PLANILHA PARA SABERMOS O QUE FOI!
+    const sheetError = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    sheetError.appendRow(["ERRO NO SISTEMA", error.toString()]);
+    
     return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": error.toString() }))
                          .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function autorizarEmail() {
+  GmailApp.sendEmail("gabes.kerkhoff@gmail.com", "Teste de Autorização", "Autorização concluída com sucesso!");
 }
 
 function doOptions(e) {

@@ -265,11 +265,11 @@
 
             <!-- Upload Area -->
             <div class="mt-6">
-                <p class="font-subtitle text-brand-verde-profundo text-sm mb-3">Comprovativo de Pagamento *</p>
+                <p class="font-subtitle text-brand-verde-profundo text-sm mb-3">Comprovante de Pagamento *</p>
                 <div class="dotted-upload p-6 flex flex-col items-center justify-center cursor-pointer group" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf" onchange="handleFileUpload(this)">
                     <span id="uploadIcon" class="material-symbols-outlined text-brand-dourado text-[32px] mb-2 group-hover:scale-110 transition-transform">attach_file</span>
-                    <p id="uploadText" class="font-body-sm text-brand-verde-oliva">Adicionar comprovativo</p>
+                    <p id="uploadText" class="font-body-sm text-brand-verde-oliva">Adicionar comprovante</p>
                 </div>
             </div>
         </section>
@@ -373,7 +373,7 @@
                 uploadIcon.innerText = 'attach_file';
                 uploadIcon.classList.add('text-brand-dourado');
                 uploadIcon.classList.remove('text-brand-verde-profundo');
-                uploadText.innerText = 'Adicionar comprovativo';
+                uploadText.innerText = 'Adicionar comprovante';
                 uploadText.classList.remove('text-brand-verde-profundo', 'font-semibold');
             }
         }
@@ -390,7 +390,7 @@
 
             const fileInput = document.getElementById('fileInput');
             if (!fileInput.files || fileInput.files.length === 0) {
-                alert('Por favor, anexe o comprovativo de pagamento.');
+                alert('Por favor, anexe o comprovante de pagamento.');
                 return;
             }
 
