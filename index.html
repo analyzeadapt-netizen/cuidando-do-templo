@@ -152,12 +152,19 @@
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-brand-bege/50 flex items-center justify-between">
+                <div id="investimentoRow" class="pt-4 border-t border-brand-bege/50 flex items-center justify-between">
                     <p class="font-subtitle text-brand-verde-profundo">Investimento</p>
                     <p class="font-headline-md text-brand-verde-oliva relative inline-block">
                         R$ 47,00
                         <span class="absolute bottom-1 left-0 w-full h-[2px] bg-brand-dourado/30 rounded-full"></span>
                     </p>
+                </div>
+                <div id="waitingListRow" class="pt-4 border-t border-brand-bege/50 flex flex-col gap-2 hidden">
+                    <div class="flex items-center gap-2 text-brand-dourado-luminoso font-semibold">
+                        <span class="material-symbols-outlined font-bold">hourglass_empty</span>
+                        <p class="font-subtitle">Lista de Espera</p>
+                    </div>
+                    <p class="font-body-sm text-brand-verde-oliva">A turma atual está preenchida. Garanta a sua vaga na lista de espera para a próxima turma.</p>
                 </div>
             </div>
         </div>
@@ -229,7 +236,7 @@
                         <option value="Outro">Outro</option>
                     </select>
                 </div>
-                <div class="flex items-start gap-3 mt-2">
+                <div class="flex items-start gap-3 mt-2" id="confirmationRow">
                     <div class="flex items-center h-6">
                         <input id="confirmacao" type="checkbox" required class="w-5 h-5 rounded border-brand-verde-oliva/30 text-brand-verde-profundo focus:ring-brand-verde-oliva bg-[#F1E5D1]">
                     </div>
@@ -241,7 +248,7 @@
         </section>
 
         <!-- Payment Section -->
-        <section class="mb-section-gap">
+        <section class="mb-section-gap" id="paymentSection">
             <h2 class="font-headline-md text-brand-verde-profundo mb-6 flex items-center gap-2">
                 <span class="material-symbols-outlined text-brand-dourado text-[20px]">qr_code_scanner</span>
                 Pagamento
@@ -295,9 +302,9 @@
                 <span class="material-symbols-outlined text-brand-verde-oliva text-[32px]">check</span>
             </div>
             
-            <h3 class="font-headline-md text-brand-verde-profundo mb-4">Inscrição Recebida!</h3>
+            <h3 class="font-headline-md text-brand-verde-profundo mb-4" id="successTitle">Inscrição Recebida!</h3>
             
-            <p class="font-body-lg text-brand-verde-oliva mb-8 text-sm leading-relaxed">
+            <p class="font-body-lg text-brand-verde-oliva mb-8 text-sm leading-relaxed" id="successMessage">
                 Assim que o pagamento for confirmado, você será adicionada ao grupo exclusivo do Whatsapp. Estamos felizes por caminhar contigo!
             </p>
             
@@ -308,6 +315,43 @@
     </div>
 
     <script>
+        // Configuração de Lista de Espera (true = Lista de Espera ativa, false = Inscrições Normais)
+        const CONFIG = {
+            isWaitingList: true
+        };
+
+        // Aplicar visual/validação com base na configuração inicial
+        document.addEventListener('DOMContentLoaded', () => {
+            const investimentoRow = document.getElementById('investimentoRow');
+            const waitingListRow = document.getElementById('waitingListRow');
+            const paymentSection = document.getElementById('paymentSection');
+            const confirmationRow = document.getElementById('confirmationRow');
+            const confirmacaoInput = document.getElementById('confirmacao');
+            const btnText = document.getElementById('btnText');
+            const successTitle = document.getElementById('successTitle');
+            const successMessage = document.getElementById('successMessage');
+
+            if (CONFIG.isWaitingList) {
+                investimentoRow.classList.add('hidden');
+                waitingListRow.classList.remove('hidden');
+                paymentSection.classList.add('hidden');
+                confirmationRow.classList.add('hidden');
+                confirmacaoInput.required = false;
+                btnText.innerText = 'ENTRAR NA LISTA DE ESPERA';
+                successTitle.innerText = 'Inscrição na Lista de Espera!';
+                successMessage.innerText = 'O seu nome foi adicionado à lista de espera. Entraremos em contacto assim que abrirem novas vagas!';
+            } else {
+                investimentoRow.classList.remove('hidden');
+                waitingListRow.classList.add('hidden');
+                paymentSection.classList.remove('hidden');
+                confirmationRow.classList.remove('hidden');
+                confirmacaoInput.required = true;
+                btnText.innerText = 'FAZER INSCRIÇÃO';
+                successTitle.innerText = 'Inscrição Recebida!';
+                successMessage.innerText = 'Assim que o pagamento for confirmado, você será adicionada ao grupo exclusivo do Whatsapp. Estamos felizes por caminhar contigo!';
+            }
+        });
+
         function copyToClipboard(text, btnElement) {
             const onSuccess = () => {
                 const icon = btnElement.querySelector('.material-symbols-outlined');
@@ -389,23 +433,20 @@
             }
 
             const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files || fileInput.files.length === 0) {
+            const hasFile = fileInput.files && fileInput.files.length > 0;
+
+            if (!CONFIG.isWaitingList && !hasFile) {
                 alert('Por favor, anexe o comprovante de pagamento.');
                 return;
             }
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            
             const btnText = document.getElementById('btnText');
             const originalBtnText = btnText.innerText;
             btn.disabled = true;
             btnText.innerText = 'A ENVIAR...';
             btn.classList.add('opacity-70', 'cursor-not-allowed');
 
-            reader.onload = function(e) {
-                const base64Data = e.target.result.split(',')[1];
-
+            const sendData = (base64Data, fileName, fileMimeType) => {
                 const payload = {
                     nome: document.getElementById('nome').value,
                     whatsapp: document.getElementById('whatsapp').value,
@@ -417,10 +458,11 @@
                     restricao: document.getElementById('restricao').value,
                     acompanhamento: document.getElementById('acompanhamento').value,
                     conheceu: document.getElementById('conheceu').value,
-                    confirmacao: document.getElementById('confirmacao').checked ? 'Sim' : 'Não',
-                    fileName: file.name,
-                    fileMimeType: file.type,
-                    fileBase64: base64Data
+                    confirmacao: CONFIG.isWaitingList ? 'Lista de Espera' : (document.getElementById('confirmacao').checked ? 'Sim' : 'Não'),
+                    fileName: fileName || '',
+                    fileMimeType: fileMimeType || '',
+                    fileBase64: base64Data || '',
+                    isWaitingList: CONFIG.isWaitingList
                 };
 
                 // Remove this bypass if you have the actual SCRIPT_URL configured
@@ -450,8 +492,20 @@
                     btn.classList.remove('opacity-70', 'cursor-not-allowed');
                 });
             };
-            
-            reader.readAsDataURL(file);
+
+            if (hasFile) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const base64Data = e.target.result.split(',')[1];
+                    sendData(base64Data, file.name, file.type);
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                sendData('', '', '');
+            }
         }
 
         function showSuccessOverlay(btn, originalBtnText) {
